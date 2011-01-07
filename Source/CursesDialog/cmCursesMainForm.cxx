@@ -309,7 +309,7 @@ void cmCursesMainForm::Render(int left, int top, int width, int height)
     }
 
   // Leave room for toolbar
-  height -= 7;
+  height -= cmCursesMainForm::MIN_HEIGHT + 1;
 
   if (this->AdvancedMode)
     {
@@ -440,18 +440,18 @@ void cmCursesMainForm::PrintKeys(int process /* = 0 */)
             "Press [h] for help           Press [q] to quit without generating");
     }
 
-  curses_move(y-4,0);
+  curses_move(y-(cmCursesMainForm::MIN_HEIGHT-2),0);
   char fmt[512] = "Press [enter] to edit option";
   if ( process )
     {
     strcpy(fmt, "                           ");
     }
   printw(fmt);
-  curses_move(y-3,0);
+  curses_move(y-(cmCursesMainForm::MIN_HEIGHT-3),0);
   printw(firstLine);
-  curses_move(y-2,0);
+  curses_move(y-(cmCursesMainForm::MIN_HEIGHT-4),0);
   printw(secondLine);
-  curses_move(y-1,0);
+  curses_move(y-(cmCursesMainForm::MIN_HEIGHT-5),0);
   printw(thirdLine);
 
   if (cw)
@@ -601,12 +601,12 @@ void cmCursesMainForm::UpdateStatusBar(const char* message)
   version[width] = '\0';
 
   // Now print both lines
-  curses_move(y-5,0);
+  curses_move(y-(cmCursesMainForm::MIN_HEIGHT-1),0);
   attron(A_STANDOUT);
   char format[] = "%s";
   printw(format, bar);
   attroff(A_STANDOUT);
-  curses_move(y-4,0);
+  curses_move(y-(cmCursesMainForm::MIN_HEIGHT-2),0);
   printw(version);
   pos_form_cursor(this->Form);
 }
@@ -870,7 +870,7 @@ void cmCursesMainForm::HandleInput()
       std::string searchstr = "Search: " + this->SearchString;
       this->UpdateStatusBar( searchstr.c_str() );
       this->PrintKeys(1);
-      curses_move(y-5,static_cast<unsigned int>(searchstr.size()));
+      curses_move(y-(cmCursesMainForm::MIN_HEIGHT-1),static_cast<unsigned int>(searchstr.size()));
       //curses_move(1,1);
       touchwin(stdscr);
       refresh();
