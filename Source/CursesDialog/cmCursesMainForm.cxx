@@ -38,6 +38,7 @@ cmCursesMainForm::cmCursesMainForm(std::vector<std::string> const& args,
   this->Entries = 0;
   this->AdvancedMode = false;
   this->NumberOfVisibleEntries = 0;
+  this->FilterString = "";
   this->OkToGenerate = false;
   this->HelpMessage.push_back("Welcome to ccmake, curses based user interface for CMake.");
   this->HelpMessage.push_back("");
@@ -407,6 +408,7 @@ void cmCursesMainForm::PrintKeys(int process /* = 0 */)
   char firstLine[512]="";
   char secondLine[512]="";
   char thirdLine[512]="";
+  char fourthLine[512]="";
   if (process)
     {
     sprintf(firstLine,
@@ -414,6 +416,8 @@ void cmCursesMainForm::PrintKeys(int process /* = 0 */)
     sprintf(secondLine,
             "                                                               ");
     sprintf(thirdLine,
+            "                                                               ");
+    sprintf(fourthLine,
             "                                                               ");
     }
   else
@@ -433,6 +437,11 @@ void cmCursesMainForm::PrintKeys(int process /* = 0 */)
     }
     sprintf(secondLine,
             "Press [h] for help           Press [q] to quit without generating");
+    sprintf(fourthLine,
+            "Press [f] to filter variables (Currently %s)",
+            this->FilterString.empty()
+            ? "no filter"
+            : this->FilterString.c_str());
     }
 
   curses_move(y-(cmCursesMainForm::MIN_HEIGHT-2),0);
@@ -448,6 +457,8 @@ void cmCursesMainForm::PrintKeys(int process /* = 0 */)
   printw(secondLine);
   curses_move(y-(cmCursesMainForm::MIN_HEIGHT-5),0);
   printw(thirdLine);
+  curses_move(y-(cmCursesMainForm::MIN_HEIGHT-6),0);
+  printw(fourthLine);
 
   if (cw)
     {
