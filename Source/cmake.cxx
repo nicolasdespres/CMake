@@ -478,7 +478,12 @@ bool cmake::SetCacheArgs(const std::vector<std::string>& args)
         cmSystemTools::Error("No cmake script provided.");
         return false;
         }
-      this->ReadListFile(args, path.c_str());
+      // Get rid of -P and the path name argument since the script does not
+      // care about it.
+      std::vector<std::string> script_args;
+      for (unsigned int j = i + 1; j < args.size(); ++j)
+        script_args.push_back(args[j]);
+      this->ReadListFile(script_args, path.c_str());
       }
     }
   return true;
