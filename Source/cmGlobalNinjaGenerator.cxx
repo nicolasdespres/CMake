@@ -303,7 +303,8 @@ void cmGlobalNinjaGenerator::WriteRule(std::ostream& os,
                                        const std::string& rspfile,
                                        const std::string& rspcontent,
                                        bool restat,
-                                       bool generator)
+                                       bool generator,
+                                       const std::string& flush)
 {
   // Make sure the rule has a name.
   if(name.empty())
@@ -369,6 +370,12 @@ void cmGlobalNinjaGenerator::WriteRule(std::ostream& os,
     {
     cmGlobalNinjaGenerator::Indent(os, 1);
     os << "generator = 1\n";
+    }
+
+  if(!flush.empty())
+    {
+    cmGlobalNinjaGenerator::Indent(os, 1);
+    os << "flush = " << flush << "\n";
     }
 
   os << "\n";
@@ -591,7 +598,8 @@ void cmGlobalNinjaGenerator::AddRule(const std::string& name,
                                      const std::string& rspfile,
                                      const std::string& rspcontent,
                                      bool restat,
-                                     bool generator)
+                                     bool generator,
+                                     const std::string& flush)
 {
   // Do not add the same rule twice.
   if (this->HasRule(name))
@@ -609,7 +617,8 @@ void cmGlobalNinjaGenerator::AddRule(const std::string& name,
                                     rspfile,
                                     rspcontent,
                                     restat,
-                                    generator);
+                                    generator,
+                                    flush);
 
   this->RuleCmdLength[name] = (int) command.size();
 }
@@ -965,7 +974,8 @@ void cmGlobalNinjaGenerator::WriteTargetRebuildManifest(std::ostream& os)
             /*rspfile=*/ "",
             /*rspcontent*/ "",
             /*restat=*/ false,
-            /*generator=*/ true);
+            /*generator=*/ true,
+            /*flush=*/ "1");
 
   cmNinjaDeps implicitDeps;
   for (std::vector<cmLocalGenerator *>::const_iterator i =
@@ -1015,7 +1025,8 @@ void cmGlobalNinjaGenerator::WriteTargetClean(std::ostream& os)
             /*rspfile=*/ "",
             /*rspcontent*/ "",
             /*restat=*/ false,
-            /*generator=*/ false);
+            /*generator=*/ false,
+            /*flush=*/ "1");
   WriteBuild(os,
              "Clean all the built files.",
              "CLEAN",
@@ -1037,7 +1048,8 @@ void cmGlobalNinjaGenerator::WriteTargetHelp(std::ostream& os)
             /*rspfile=*/ "",
             /*rspcontent*/ "",
             /*restat=*/ false,
-            /*generator=*/ false);
+            /*generator=*/ false,
+            /*flush=*/ "1");
   WriteBuild(os,
              "Print all primary targets available.",
              "HELP",

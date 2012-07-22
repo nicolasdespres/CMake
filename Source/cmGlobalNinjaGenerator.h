@@ -121,7 +121,8 @@ public:
                         const std::string& rspfile,
                         const std::string& rspcontent,
                         bool restat,
-                        bool generator);
+                        bool generator,
+                        const std::string& flush);
 
   /**
    * Write a variable named @a name to @a os with value @a value and an
@@ -240,7 +241,8 @@ public:
                const std::string& rspfile = "",
                const std::string& rspcontent = "",
                bool restat = false,
-               bool generator = false);
+               bool generator = false,
+               const std::string& flush = "");
 
   bool HasRule(const std::string& name);
 
