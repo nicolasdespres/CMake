@@ -34,9 +34,6 @@ cmLocalNinjaGenerator::cmLocalNinjaGenerator()
   this->TargetImplib = "$TARGET_IMPLIB";
 }
 
-//----------------------------------------------------------------------------
-// Virtual public methods.
-
 cmLocalNinjaGenerator::~cmLocalNinjaGenerator()
 {
 }
@@ -71,11 +68,6 @@ void cmLocalNinjaGenerator::Generate()
   this->WriteCustomCommandBuildStatements();
 }
 
-// Implemented in:
-//   cmLocalUnixMakefileGenerator3.
-// Used in:
-//   Source/cmMakefile.cxx
-//   Source/cmGlobalGenerator.cxx
 void cmLocalNinjaGenerator::Configure()
 {
   // Compute the path to use when referencing the current output
@@ -104,9 +96,6 @@ std::string cmLocalNinjaGenerator
   return dir;
 }
 
-//----------------------------------------------------------------------------
-// Non-virtual public methods.
-
 const cmGlobalNinjaGenerator*
 cmLocalNinjaGenerator::GetGlobalNinjaGenerator() const
 {
@@ -119,9 +108,6 @@ cmGlobalNinjaGenerator* cmLocalNinjaGenerator::GetGlobalNinjaGenerator()
   return static_cast<cmGlobalNinjaGenerator*>(this->GetGlobalGenerator());
 }
 
-//----------------------------------------------------------------------------
-// Virtual protected methods.
-
 std::string
 cmLocalNinjaGenerator::ConvertToLinkReference(std::string const& lib)
 {
@@ -133,9 +119,6 @@ cmLocalNinjaGenerator::ConvertToIncludeReference(std::string const& path)
 {
   return this->Convert(path.c_str(), HOME_OUTPUT, SHELL);
 }
-
-//----------------------------------------------------------------------------
-// Private methods.
 
 cmGeneratedFileStream& cmLocalNinjaGenerator::GetBuildFileStream() const
 {

@@ -435,9 +435,6 @@ cmGlobalNinjaGenerator::cmGlobalNinjaGenerator()
 }
 
 
-//----------------------------------------------------------------------------
-// Virtual public methods.
-
 cmLocalGenerator* cmGlobalNinjaGenerator::CreateLocalGenerator()
 {
   cmLocalGenerator* lg = new cmLocalNinjaGenerator;
@@ -456,10 +453,6 @@ void cmGlobalNinjaGenerator
     "\"all\" target.  An \"install\" target is also provided.";
 }
 
-// Implemented in all cmGlobaleGenerator sub-classes.
-// Used in:
-//   Source/cmLocalGenerator.cxx
-//   Source/cmake.cxx
 void cmGlobalNinjaGenerator::Generate()
 {
   this->OpenBuildFileStream();
@@ -481,9 +474,6 @@ void cmGlobalNinjaGenerator::Generate()
   this->CloseBuildFileStream();
 }
 
-// Implemented in all cmGlobaleGenerator sub-classes.
-// Used in:
-//   Source/cmMakefile.cxx:
 void cmGlobalNinjaGenerator
 ::EnableLanguage(std::vector<std::string>const& languages,
                  cmMakefile *mf,
@@ -552,14 +542,6 @@ void cmGlobalNinjaGenerator
 
 bool cmGlobalNinjaGenerator::UsingMinGW = false;
 
-// Implemented by:
-//   cmGlobalUnixMakefileGenerator3
-//   cmGlobalVisualStudio10Generator
-//   cmGlobalVisualStudio6Generator
-//   cmGlobalVisualStudio7Generator
-//   cmGlobalXCodeGenerator
-// Called by:
-//   cmGlobalGenerator::Build()
 std::string cmGlobalNinjaGenerator
 ::GenerateBuildCommand(const char* makeProgram,
                        const char* projectName,
@@ -601,9 +583,6 @@ std::string cmGlobalNinjaGenerator
   return makeCommand;
 }
 
-//----------------------------------------------------------------------------
-// Non-virtual public methods.
-
 void cmGlobalNinjaGenerator::AddRule(const std::string& name,
                                      const std::string& command,
                                      const std::string& description,
@@ -641,9 +620,6 @@ bool cmGlobalNinjaGenerator::HasRule(const std::string &name)
   return (rule != this->Rules.end());
 }
 
-//----------------------------------------------------------------------------
-// Private virtual overrides
-
 // TODO: Refactor to combine with cmGlobalUnixMakefileGenerator3 impl.
 void cmGlobalNinjaGenerator::ComputeTargetObjects(cmGeneratorTarget* gt) const
 {
@@ -668,9 +644,6 @@ void cmGlobalNinjaGenerator::ComputeTargetObjects(cmGeneratorTarget* gt) const
     gt->Objects[sf] = objectName;
     }
 }
-
-//----------------------------------------------------------------------------
-// Private methods
 
 void cmGlobalNinjaGenerator::OpenBuildFileStream()
 {
