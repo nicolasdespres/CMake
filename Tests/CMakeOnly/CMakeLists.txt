@@ -58,3 +58,12 @@ endfunction()
 add_major_test(PythonLibs VERSIONS 2 3 VERSION_VAR PYTHONLIBS_VERSION_STRING)
 add_major_test(PythonInterp NOLANG VERSIONS 2 3 VERSION_VAR PYTHON_VERSION_STRING)
 add_major_test(Qt VERSIONS 3 4 VERSION_VAR QT_VERSION_STRING)
+
+# This test is performance test of the configuration step. The timeout
+# value is low on purpose to make previous version of CMake not to pass this
+# test. Also, it only runs cmake (neither make, nor any generated program)
+# to make sure the test execution time is cmake execution time.
+set(_test_name ThousandTargetsDepOnOneCommandWithManyDeps)
+add_CMakeOnly_test(${_test_name})
+set_property(TEST CMakeOnly.${_test_name} PROPERTY TIMEOUT 90)
+unset(_test_name)
