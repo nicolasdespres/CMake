@@ -1039,6 +1039,22 @@ private:
 
   bool GeneratingBuildSystem;
 
+  /**
+   * Old version of GetSourceFileWithOutput(const char*) kept for
+   * backward-compatibility. It implements a linear search and support
+   * relative file paths. It is used as a fall back by
+   * GetSourceFileWithOutput(const char*).
+   */
+  cmSourceFile *LinearGetSourceFileWithOutput(const char *cname);
+
+  // A map for fast output to input look up.
+  typedef std::map<std::string, cmSourceFile*> OutputToSourceMap;
+  OutputToSourceMap OutputToSource;
+
+  void UpdateOutputToSourceMap(const std::vector<std::string>& outputs,
+                               cmSourceFile* source);
+  void UpdateOutputToSourceMap(const std::string& output,
+                               cmSourceFile* source);
 };
 
 //----------------------------------------------------------------------------
