@@ -29,6 +29,7 @@
 
 #include <cmsys/auto_ptr.hxx>
 #include <cmsys/RegularExpression.hxx>
+#include <cmsys/hash_map.hxx>
 
 class cmFunctionBlocker;
 class cmCommand;
@@ -1048,7 +1049,7 @@ private:
   cmSourceFile *LinearGetSourceFileWithOutput(const char *cname);
 
   // A map for fast output to input look up.
-  typedef std::map<std::string, cmSourceFile*> OutputToSourceMap;
+  typedef cmsys::hash_map<std::string, cmSourceFile*> OutputToSourceMap;
   OutputToSourceMap OutputToSource;
 
   void UpdateOutputToSourceMap(const std::vector<std::string>& outputs,

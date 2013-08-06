@@ -304,6 +304,8 @@ KWSYS_CXX_SOURCES="\
 KWSYS_FILES="\
   auto_ptr.hxx \
   Directory.hxx \
+  hash_map.hxx \
+  hashtable.hxx \
   Glob.hxx \
   Process.h \
   RegularExpression.hxx \
