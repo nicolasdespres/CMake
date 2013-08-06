@@ -1,0 +1,3 @@
+if(EXISTS @TEST_FILE@)
+  message(FATAL_ERROR "Wrong dependencies! @TEST_FILE@ should not exist.")
+endif()

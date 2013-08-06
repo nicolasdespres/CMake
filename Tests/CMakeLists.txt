@@ -2564,5 +2564,8 @@ ${CMake_BINARY_DIR}/bin/cmake -DVERSION=master -P ${CMake_SOURCE_DIR}/Utilities/
       WORKING_DIRECTORY ${CMake_BINARY_DIR}/Utilities/KWStyle)
   endif()
 
+  add_test_macro(EmptyDepAndZeroOutput
+    ${CMAKE_CMAKE_COMMAND} -P check.cmake)
+
   add_subdirectory(CMakeTests)
 endif()
