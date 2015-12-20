@@ -751,13 +751,19 @@ void cmGlobalNinjaGenerator
 //----------------------------------------------------------------------------
 // Private methods
 
-void cmGlobalNinjaGenerator::OpenBuildFileStream()
+std::string cmGlobalNinjaGenerator::GetNinjaBuildFilePath()
 {
-  // Compute Ninja's build file path.
   std::string buildFilePath =
     this->GetCMakeInstance()->GetHomeOutputDirectory();
   buildFilePath += "/";
   buildFilePath += cmGlobalNinjaGenerator::NINJA_BUILD_FILE;
+  return buildFilePath;
+}
+
+void cmGlobalNinjaGenerator::OpenBuildFileStream()
+{
+  // Compute Ninja's build file path.
+  std::string buildFilePath = this->GetNinjaBuildFilePath();
 
   // Get a stream where to generate things.
   if (!this->BuildFileStream)
@@ -794,13 +800,18 @@ void cmGlobalNinjaGenerator::CloseBuildFileStream()
    }
 }
 
-void cmGlobalNinjaGenerator::OpenRulesFileStream()
+std::string cmGlobalNinjaGenerator::GetNinjaRulesFilePath()
 {
-  // Compute Ninja's build file path.
   std::string rulesFilePath =
     this->GetCMakeInstance()->GetHomeOutputDirectory();
   rulesFilePath += "/";
   rulesFilePath += cmGlobalNinjaGenerator::NINJA_RULES_FILE;
+  return rulesFilePath;
+}
+
+void cmGlobalNinjaGenerator::OpenRulesFileStream()
+{
+  std::string rulesFilePath = this->GetNinjaRulesFilePath();
 
   // Get a stream where to generate things.
   if (!this->RulesFileStream)
@@ -842,7 +853,8 @@ std::string cmGlobalNinjaGenerator::ConvertToNinjaPath(const std::string& path)
 {
   cmLocalNinjaGenerator *ng =
     static_cast<cmLocalNinjaGenerator *>(this->LocalGenerators[0]);
-  std::string convPath = ng->Convert(path, cmOutputConverter::HOME_OUTPUT);
+  std::cout << "DBG::ConvertToNinjaPath(" << path << ")" << std::endl;
+  std::string convPath = ng->Convert(path, cmOutputConverter::FULL);
 #ifdef _WIN32
   cmSystemTools::ReplaceString(convPath, "/", "\\");
 #endif
@@ -1104,7 +1116,7 @@ void cmGlobalNinjaGenerator::WriteUnknownExplicitDependencies(std::ostream& os)
         }
       }
     }
-  knownDependencies.insert( "CMakeCache.txt" );
+  knownDependencies.insert(this->ConvertToNinjaPath("CMakeCache.txt"));
 
   for(TargetAliasMap::const_iterator i= this->TargetAliases.begin();
       i != this->TargetAliases.end();
@@ -1204,10 +1216,16 @@ void cmGlobalNinjaGenerator::WriteTargetAll(std::ostream& os)
   cmNinjaDeps outputs;
   outputs.push_back("all");
 
+  cmNinjaDeps deps;
+  // By default, we want to rebuild the manifest if necessary.
+  deps.push_back(this->GetNinjaBuildFilePath());
+  std::copy(this->AllDependencies.begin(), this->AllDependencies.end(),
+            std::back_inserter(deps));
+
   this->WritePhonyBuild(os,
                         "The main all target.",
                         outputs,
-                        this->AllDependencies);
+                        deps);
 
   cmGlobalNinjaGenerator::WriteDefault(os,
                                        outputs,
@@ -1250,7 +1268,7 @@ void cmGlobalNinjaGenerator::WriteTargetRebuildManifest(std::ostream& os)
       implicitDeps.push_back(this->ConvertToNinjaPath(*fi));
       }
     }
-  implicitDeps.push_back("CMakeCache.txt");
+  implicitDeps.push_back(this->ConvertToNinjaPath("CMakeCache.txt"));
 
   std::sort(implicitDeps.begin(), implicitDeps.end());
   implicitDeps.erase(std::unique(implicitDeps.begin(), implicitDeps.end()),
@@ -1267,7 +1285,7 @@ void cmGlobalNinjaGenerator::WriteTargetRebuildManifest(std::ostream& os)
   this->WriteBuild(os,
                    "Re-run CMake if any of its inputs changed.",
                    "RERUN_CMAKE",
-                   /*outputs=*/ cmNinjaDeps(1, NINJA_BUILD_FILE),
+                   /*outputs=*/ cmNinjaDeps(1, this->GetNinjaBuildFilePath()),
                    /*explicitDeps=*/ cmNinjaDeps(),
                    implicitDeps,
                    /*orderOnlyDeps=*/ cmNinjaDeps(),

@@ -30,7 +30,9 @@ void cmNinjaUtilityTargetGenerator::Generate()
   utilCommandName += this->GetTargetName() + ".util";
 
   std::vector<std::string> commands;
-  cmNinjaDeps deps, outputs, util_outputs(1, utilCommandName);
+  cmNinjaDeps deps;
+  cmNinjaDeps outputs;
+  cmNinjaDeps util_outputs(1, this->ConvertToNinjaPath(utilCommandName));
 
   const std::vector<cmCustomCommand> *cmdLists[2] = {
     &this->GetGeneratorTarget()->GetPreBuildCommands(),
@@ -47,6 +49,10 @@ void cmNinjaUtilityTargetGenerator::Generate()
       this->GetLocalGenerator()->AppendCustomCommandDeps(ccg, deps);
       this->GetLocalGenerator()->AppendCustomCommandLines(ccg, commands);
       std::vector<std::string> const& ccByproducts = ccg.GetByproducts();
+      std::cout << "DBG::cmNinjaUtilityTargetGenerator::Generate "
+                << "transform to util_outputs size "
+                << ccByproducts.size()
+                << std::endl;
       std::transform(ccByproducts.begin(), ccByproducts.end(),
                      std::back_inserter(util_outputs), MapToNinjaPath());
       if (ci->GetUsesTerminal())
@@ -126,6 +132,9 @@ void cmNinjaUtilityTargetGenerator::Generate()
       this->GetGlobalGenerator()->SeenCustomCommandOutput(*oi);
       }
 
+    std::cout << "DBG::cmNinjaUtilityTargetGenerator::Generate "
+              << "first util_outputs=" << util_outputs[0]
+              << std::endl;
     this->GetGlobalGenerator()->WriteCustomCommandBuild(
       command,
       desc,
@@ -135,10 +144,19 @@ void cmNinjaUtilityTargetGenerator::Generate()
       util_outputs,
       deps);
 
+    std::cout << "DBG::cmNinjaUtilityTargetGenerator::Generate "
+              << "first outputs=" << outputs[0]
+              << std::endl;
+    std::cout << "DBG::cmNinjaUtilityTargetGenerator::Generate "
+              << "utilityCommandName=" << utilCommandName
+              << std::endl;
+
+    cmNinjaDeps phonyDeps =
+      cmNinjaDeps(1, this->ConvertToNinjaPath(utilCommandName));
     this->GetGlobalGenerator()->WritePhonyBuild(this->GetBuildFileStream(),
                                                 "",
                                                 outputs,
-                                                cmNinjaDeps(1, utilCommandName)
+                                                phonyDeps
                                                 );
   }
 

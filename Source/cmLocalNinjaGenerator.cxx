@@ -250,8 +250,10 @@ void cmLocalNinjaGenerator::WriteNinjaFilesInclusion(std::ostream& os)
     << "# Include auxiliary files.\n"
     << "\n"
     ;
+  std::string rulesFilePath =
+    this->GetGlobalNinjaGenerator()->GetNinjaRulesFilePath();
   cmGlobalNinjaGenerator::WriteInclude(os,
-                                      cmGlobalNinjaGenerator::NINJA_RULES_FILE,
+                                       rulesFilePath,
                                        "Include rules file.");
   os << "\n";
 }

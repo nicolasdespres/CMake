@@ -401,6 +401,8 @@ void cmNinjaNormalTargetGenerator::WriteLinkStatement()
 {
   cmGeneratorTarget& gt = *this->GetGeneratorTarget();
   const std::string cfgName = this->GetConfigName();
+  std::cout << "DBG:: " << "config full path=" << gt.GetFullPath(cfgName)
+            << std::endl;
   std::string targetOutput = ConvertToNinjaPath(
                                gt.GetFullPath(cfgName));
   std::string targetOutputReal = ConvertToNinjaPath(
@@ -478,8 +480,12 @@ void cmNinjaNormalTargetGenerator::WriteLinkStatement()
   bool useWatcomQuote = mf->IsOn(createRule+"_USE_WATCOM_QUOTE");
   cmLocalNinjaGenerator& localGen = *this->GetLocalGenerator();
 
+  std::cout << "DBG:: " << "targetOutputReal=" << targetOutputReal
+            << std::endl;
   vars["TARGET_FILE"] =
     localGen.ConvertToOutputFormat(targetOutputReal, cmLocalGenerator::SHELL);
+  std::cout << "DBG:: " << "TARGET_FILE=" << vars["TARGET_FILE"]
+            << std::endl;
 
   localGen.GetTargetFlags(vars["LINK_LIBRARIES"],
                           vars["FLAGS"],

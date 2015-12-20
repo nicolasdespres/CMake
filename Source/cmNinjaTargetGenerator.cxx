@@ -227,6 +227,9 @@ std::string
 cmNinjaTargetGenerator
 ::GetSourceFilePath(cmSourceFile const* source) const
 {
+  std::cout << "DBG::" << "source full path="
+            << source->GetFullPath()
+            << std::endl;
   return ConvertToNinjaPath(source->GetFullPath());
 }
 
@@ -242,6 +245,10 @@ cmNinjaTargetGenerator
   path += this->LocalGenerator->GetTargetDirectory(this->GeneratorTarget);
   path += "/";
   path += objectName;
+  path = ConvertToNinjaPath(path);
+  std::cout << "DBG::" << "GetObjectFilePath="
+            << path
+            << std::endl;
   return path;
 }
 
