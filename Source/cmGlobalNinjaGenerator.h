@@ -405,6 +405,9 @@ private:
 
   std::string NinjaCommand;
   std::string NinjaVersion;
+
+private:
+  std::string TargetAll;
 };
 
 #endif // ! cmGlobalNinjaGenerator_h
