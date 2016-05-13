@@ -17,6 +17,7 @@
 
 #include "cmGlobalGeneratorFactory.h"
 #include "cmNinjaTypes.h"
+#include "cmOutputConverter.h"
 
 //#define NINJA_GEN_VERBOSE_FILES
 
@@ -228,9 +229,10 @@ public:
   cmGeneratedFileStream* GetRulesFileStream() const {
     return this->RulesFileStream; }
 
-  std::string ConvertToNinjaPath(const std::string& path);
+  std::string ConvertToNinjaPath(const std::string& path,
+                                 cmOutputConverter::OutputFormat format
+                                 = cmOutputConverter::UNCHANGED);
   std::string ConvertToNinjaFolderRule(const std::string& path);
-
 
   struct MapToNinjaPathImpl {
     cmGlobalNinjaGenerator* GG;
@@ -406,7 +408,15 @@ private:
   std::string NinjaCommand;
   std::string NinjaVersion;
 
+public:
+  std::string NinjaOutputPath(const std::string& path);
+  bool HasOutputPathPrefix() const { return !this->OutputPathPrefix.empty(); }
+  void StripNinjaOutputPathPrefixAsSuffix(std::string& path);
+
 private:
+  void InitOutputPathPrefix();
+
+  std::string OutputPathPrefix;
   std::string TargetAll;
   std::string CMakeCacheFile;
 };

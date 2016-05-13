@@ -567,8 +567,9 @@ void cmGlobalNinjaGenerator::Generate()
   this->OpenBuildFileStream();
   this->OpenRulesFileStream();
 
-  this->TargetAll = "all";
-  this->CMakeCacheFile = "CMakeCache.txt";
+  this->InitOutputPathPrefix();
+  this->TargetAll = this->NinjaOutputPath("all");
+  this->CMakeCacheFile = this->NinjaOutputPath("CMakeCache.txt");
 
   this->PolicyCMP0058 =
     this->LocalGenerators[0]->GetMakefile()
@@ -840,11 +841,50 @@ void cmGlobalNinjaGenerator::CloseRulesFileStream()
    }
 }
 
-std::string cmGlobalNinjaGenerator::ConvertToNinjaPath(const std::string& path)
+static void EnsureTrailingSlash(std::string& path)
+{
+  if (path.empty())
+    {
+    return;
+    }
+  std::string::value_type last = path[path.size()-1];
+#ifdef _WIN32
+  if (last != '\\')
+    {
+    path += '\\';
+    }
+#else
+  if (last != '/')
+    {
+    path += '/';
+    }
+#endif
+}
+
+std::string
+cmGlobalNinjaGenerator::ConvertToNinjaPath(
+                                      const std::string& path,
+                                      cmOutputConverter::OutputFormat format)
 {
   cmLocalNinjaGenerator *ng =
     static_cast<cmLocalNinjaGenerator *>(this->LocalGenerators[0]);
-  std::string convPath = ng->Convert(path, cmOutputConverter::HOME_OUTPUT);
+  std::string convPath;
+  if (this->HasOutputPathPrefix())
+    {
+    convPath = ng->Convert(path, cmOutputConverter::FULL, format);
+    std::string absBuildDir
+      = this->GetCMakeInstance()->GetHomeOutputDirectory();
+    EnsureTrailingSlash(absBuildDir);
+    if (cmStartsWith(convPath, absBuildDir))
+      {
+      convPath = convPath.substr(absBuildDir.size());
+      convPath = this->NinjaOutputPath(convPath);
+      }
+    }
+  else
+    {
+    convPath = ng->Convert(path, cmOutputConverter::HOME_OUTPUT);
+    }
 #ifdef _WIN32
   cmSystemTools::ReplaceString(convPath, "/", "\\");
 #endif
@@ -857,6 +897,7 @@ cmGlobalNinjaGenerator::ConvertToNinjaFolderRule(const std::string& path)
   cmLocalNinjaGenerator *ng =
     static_cast<cmLocalNinjaGenerator *>(this->LocalGenerators[0]);
   std::string convPath = ng->Convert(path+"/all", cmOutputConverter::HOME);
+  convPath = this->NinjaOutputPath(convPath);
 #ifdef _WIN32
   cmSystemTools::ReplaceString(convPath, "/", "\\");
 #endif
@@ -977,7 +1018,7 @@ cmGlobalNinjaGenerator
     std::string path = this->ConvertToNinjaPath(
       target->GetLocalGenerator()->GetCurrentBinaryDirectory());
     if (path.empty() || path == ".")
-      outputs.push_back(target->GetName());
+      outputs.push_back(this->NinjaOutputPath(target->GetName()));
     else {
       path += "/";
       path += target->GetName();
@@ -989,7 +1030,7 @@ cmGlobalNinjaGenerator
   case cmState::GLOBAL_TARGET:
     // Always use the target in HOME instead of an unused duplicate in a
     // subdirectory.
-    outputs.push_back(target->GetName());
+    outputs.push_back(this->NinjaOutputPath(target->GetName()));
     break;
 
   default:
@@ -1025,6 +1066,7 @@ cmGlobalNinjaGenerator
 
 void cmGlobalNinjaGenerator::AddTargetAlias(const std::string& alias,
                                             cmGeneratorTarget* target) {
+  std::string buildAlias = this->NinjaOutputPath(alias);
   cmNinjaDeps outputs;
   this->AppendTargetOutputs(target, outputs);
   // Mark the target's outputs as ambiguous to ensure that no other target uses
@@ -1035,7 +1077,7 @@ void cmGlobalNinjaGenerator::AddTargetAlias(const std::string& alias,
   // Insert the alias into the map.  If the alias was already present in the
   // map and referred to another target, mark it as ambiguous.
   std::pair<TargetAliasMap::iterator, bool> newAlias =
-    TargetAliases.insert(std::make_pair(alias, target));
+    TargetAliases.insert(std::make_pair(buildAlias, target));
   if (newAlias.second && newAlias.first->second != target)
     newAlias.first->second = 0;
 }
@@ -1301,9 +1343,12 @@ void cmGlobalNinjaGenerator::WriteTargetAll(std::ostream& os)
                         outputs,
                         this->AllDependencies);
 
-  cmGlobalNinjaGenerator::WriteDefault(os,
-                                       outputs,
-                                       "Make the all target the default.");
+  if (!this->HasOutputPathPrefix())
+    {
+    cmGlobalNinjaGenerator::WriteDefault(os,
+                                         outputs,
+                                         "Make the all target the default.");
+    }
 }
 
 void cmGlobalNinjaGenerator::WriteTargetRebuildManifest(std::ostream& os)
@@ -1356,10 +1401,11 @@ void cmGlobalNinjaGenerator::WriteTargetRebuildManifest(std::ostream& os)
     variables["pool"] = "console";
     }
 
+  std::string ninjaBuildFile = this->NinjaOutputPath(NINJA_BUILD_FILE);
   this->WriteBuild(os,
                    "Re-run CMake if any of its inputs changed.",
                    "RERUN_CMAKE",
-                   /*outputs=*/ cmNinjaDeps(1, NINJA_BUILD_FILE),
+                   /*outputs=*/ cmNinjaDeps(1, ninjaBuildFile),
                    /*explicitDeps=*/ cmNinjaDeps(),
                    implicitDeps,
                    /*orderOnlyDeps=*/ cmNinjaDeps(),
@@ -1404,7 +1450,7 @@ void cmGlobalNinjaGenerator::WriteTargetClean(std::ostream& os)
   WriteBuild(os,
              "Clean all the built files.",
              "CLEAN",
-             /*outputs=*/ cmNinjaDeps(1, "clean"),
+             /*outputs=*/ cmNinjaDeps(1, this->NinjaOutputPath("clean")),
              /*explicitDeps=*/ cmNinjaDeps(),
              /*implicitDeps=*/ cmNinjaDeps(),
              /*orderOnlyDeps=*/ cmNinjaDeps(),
@@ -1427,9 +1473,33 @@ void cmGlobalNinjaGenerator::WriteTargetHelp(std::ostream& os)
   WriteBuild(os,
              "Print all primary targets available.",
              "HELP",
-             /*outputs=*/ cmNinjaDeps(1, "help"),
+             /*outputs=*/ cmNinjaDeps(1, this->NinjaOutputPath("help")),
              /*explicitDeps=*/ cmNinjaDeps(),
              /*implicitDeps=*/ cmNinjaDeps(),
              /*orderOnlyDeps=*/ cmNinjaDeps(),
              /*variables=*/ cmNinjaVars());
+}
+
+void cmGlobalNinjaGenerator::InitOutputPathPrefix()
+{
+  this->OutputPathPrefix =
+    this->LocalGenerators[0]->GetMakefile()
+    ->GetSafeDefinition("CMAKE_NINJA_OUTPUT_PATH_PREFIX");
+  EnsureTrailingSlash(this->OutputPathPrefix);
+}
+
+std::string cmGlobalNinjaGenerator::NinjaOutputPath(const std::string& path)
+{
+  return this->OutputPathPrefix + path;
+}
+
+void
+cmGlobalNinjaGenerator::StripNinjaOutputPathPrefixAsSuffix(std::string& path)
+{
+  if (path.empty())
+    {
+    return;
+    }
+  EnsureTrailingSlash(path);
+  cmStripSuffixIfExists(path, this->OutputPathPrefix);
 }

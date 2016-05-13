@@ -131,7 +131,10 @@ std::string
 cmLocalNinjaGenerator::ConvertToLinkReference(std::string const& lib,
                                               OutputFormat format)
 {
-  return this->Convert(lib, HOME_OUTPUT, format);
+  if (this->GetGlobalNinjaGenerator()->HasOutputPathPrefix())
+    return this->ConvertToNinjaPath(lib, format);
+  else
+    return this->Convert(lib, HOME_OUTPUT, format);
 }
 
 std::string
@@ -143,6 +146,13 @@ cmLocalNinjaGenerator::ConvertToIncludeReference(std::string const& path,
 }
 
 // Private methods.
+
+std::string
+cmLocalNinjaGenerator::ConvertToNinjaPath(const std::string& path,
+                                          OutputFormat format)
+{
+  return this->GetGlobalNinjaGenerator()->ConvertToNinjaPath(path, format);
+}
 
 cmGeneratedFileStream& cmLocalNinjaGenerator::GetBuildFileStream() const
 {
@@ -247,8 +257,11 @@ void cmLocalNinjaGenerator::WriteNinjaFilesInclusion(std::ostream& os)
     << "# Include auxiliary files.\n"
     << "\n"
     ;
+  cmGlobalNinjaGenerator* ng = this->GetGlobalNinjaGenerator();
+  std::string rulesFilePath =
+    ng->EncodeIdent(ng->EncodePath(ng->NinjaOutputPath(cmGlobalNinjaGenerator::NINJA_RULES_FILE)), os);
   cmGlobalNinjaGenerator::WriteInclude(os,
-                                      cmGlobalNinjaGenerator::NINJA_RULES_FILE,
+                                       rulesFilePath,
                                        "Include rules file.");
   os << "\n";
 }

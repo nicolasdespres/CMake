@@ -29,6 +29,7 @@ void cmNinjaUtilityTargetGenerator::Generate()
 {
   std::string utilCommandName = cmake::GetCMakeFilesDirectoryPostSlash();
   utilCommandName += this->GetTargetName() + ".util";
+  utilCommandName = this->ConvertToNinjaPath(utilCommandName);
 
   std::vector<std::string> commands;
   cmNinjaDeps deps, outputs, util_outputs(1, utilCommandName);

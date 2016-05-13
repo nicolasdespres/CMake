@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.5)
+project(hello C)
+add_subdirectory(SubDirPrefix)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_executable(hello hello_sub_greeting.c)
+target_link_libraries(hello greeting)
+include(CheckOutput.cmake)

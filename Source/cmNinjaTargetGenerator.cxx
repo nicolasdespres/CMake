@@ -243,7 +243,7 @@ cmNinjaTargetGenerator
   path += this->LocalGenerator->GetTargetDirectory(this->GeneratorTarget);
   path += "/";
   path += objectName;
-  return path;
+  return ConvertToNinjaPath(path);
 }
 
 std::string cmNinjaTargetGenerator::GetTargetOutputDir() const
@@ -261,7 +261,7 @@ cmNinjaTargetGenerator
     return name;
   path += "/";
   path += name;
-  return path;
+  return ConvertToNinjaPath(path);
 }
 
 std::string cmNinjaTargetGenerator::GetTargetName() const
@@ -590,7 +590,8 @@ cmNinjaTargetGenerator
   std::string const language = source->GetLanguage();
   std::string const sourceFileName =
     language=="RC" ? source->GetFullPath() : this->GetSourceFilePath(source);
-  std::string const objectDir = this->GeneratorTarget->GetSupportDirectory();
+  std::string const objectDir
+    = ConvertToNinjaPath(this->GeneratorTarget->GetSupportDirectory());
   std::string const objectFileName = this->GetObjectFilePath(source);
   std::string const objectFileDir =
     cmSystemTools::GetFilenamePath(objectFileName);
@@ -657,10 +658,10 @@ cmNinjaTargetGenerator
   EnsureParentDirectoryExists(objectFileName);
 
   vars["OBJECT_DIR"] = this->GetLocalGenerator()->ConvertToOutputFormat(
-                         ConvertToNinjaPath(objectDir),
+                         objectDir,
                          cmLocalGenerator::SHELL);
   vars["OBJECT_FILE_DIR"] = this->GetLocalGenerator()->ConvertToOutputFormat(
-                              ConvertToNinjaPath(objectFileDir),
+                              objectFileDir,
                               cmLocalGenerator::SHELL);
 
   this->addPoolNinjaVariable("JOB_POOL_COMPILE",
@@ -768,9 +769,12 @@ cmNinjaTargetGenerator
     }
   else
     {
-    const std::string fullPath = std::string(this->GetGlobalGenerator()->
-                                 GetCMakeInstance()->GetHomeOutputDirectory())
-                                   + "/" + path;
+    cmGlobalNinjaGenerator* gg = this->GetGlobalGenerator();
+    std::string fullPath
+      = std::string(gg->GetCMakeInstance()->GetHomeOutputDirectory());
+    // Also ensure their is a trailing backslash.
+    gg->StripNinjaOutputPathPrefixAsSuffix(fullPath);
+    fullPath += path;
     cmSystemTools::MakeDirectory(fullPath.c_str());
     }
 }

@@ -101,6 +101,8 @@ private:
   void WriteCustomCommandBuildStatements();
 
   std::string MakeCustomLauncher(cmCustomCommandGenerator const& ccg);
+  std::string ConvertToNinjaPath(const std::string& path,
+                                 OutputFormat format = SHELL);
 
   std::string HomeRelativeOutputPath;
 
