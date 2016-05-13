@@ -408,6 +408,7 @@ private:
 
 private:
   std::string TargetAll;
+  std::string CMakeCacheFile;
 };
 
 #endif // ! cmGlobalNinjaGenerator_h

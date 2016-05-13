@@ -568,6 +568,7 @@ void cmGlobalNinjaGenerator::Generate()
   this->OpenRulesFileStream();
 
   this->TargetAll = "all";
+  this->CMakeCacheFile = "CMakeCache.txt";
 
   this->PolicyCMP0058 =
     this->LocalGenerators[0]->GetMakefile()
@@ -1193,7 +1194,7 @@ void cmGlobalNinjaGenerator::WriteUnknownExplicitDependencies(std::ostream& os)
         }
       }
     }
-  knownDependencies.insert( "CMakeCache.txt" );
+  knownDependencies.insert( this->CMakeCacheFile );
 
   for(TargetAliasMap::const_iterator i= this->TargetAliases.begin();
       i != this->TargetAliases.end();
@@ -1341,7 +1342,7 @@ void cmGlobalNinjaGenerator::WriteTargetRebuildManifest(std::ostream& os)
       implicitDeps.push_back(this->ConvertToNinjaPath(*fi));
       }
     }
-  implicitDeps.push_back("CMakeCache.txt");
+  implicitDeps.push_back(this->CMakeCacheFile);
 
   std::sort(implicitDeps.begin(), implicitDeps.end());
   implicitDeps.erase(std::unique(implicitDeps.begin(), implicitDeps.end()),
