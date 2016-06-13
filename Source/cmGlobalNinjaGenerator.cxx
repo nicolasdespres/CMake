@@ -157,26 +157,44 @@ void cmGlobalNinjaGenerator::WriteBuild(
 
   // TODO: Better formatting for when there are multiple input/output files.
 
+  // Sort input/output node and remove duplicates to make the generator more
+  // deterministic.
+  // We assume that commands using $in and $out varialbes do not care
+  // about the order of their inputs/outputs files, but commands that do
+  // not use them do care (like custom commands for instance).
+  cmNinjaUniqDeps sortedExplicitDeps;
+  cmNinjaUniqDeps sortedOutputs;
+  std::copy(explicitDeps.begin(), explicitDeps.end(),
+            std::inserter(sortedExplicitDeps, sortedExplicitDeps.begin()));
+  std::copy(outputs.begin(), outputs.end(),
+            std::inserter(sortedOutputs, sortedOutputs.begin()));
+
   // Write explicit dependencies.
-  for (cmNinjaDeps::const_iterator i = explicitDeps.begin();
-       i != explicitDeps.end(); ++i) {
+  for (cmNinjaUniqDeps::const_iterator i = sortedExplicitDeps.begin();
+       i != sortedExplicitDeps.end(); ++i) {
     arguments += " " + EncodeIdent(EncodePath(*i), os);
   }
 
   // Write implicit dependencies.
   if (!implicitDeps.empty()) {
+    cmNinjaUniqDeps sortedImplicitDeps;
+    std::copy(implicitDeps.begin(), implicitDeps.end(),
+              std::inserter(sortedImplicitDeps, sortedImplicitDeps.begin()));
     arguments += " |";
-    for (cmNinjaDeps::const_iterator i = implicitDeps.begin();
-         i != implicitDeps.end(); ++i) {
+    for (cmNinjaUniqDeps::const_iterator i = sortedImplicitDeps.begin();
+         i != sortedImplicitDeps.end(); ++i) {
       arguments += " " + EncodeIdent(EncodePath(*i), os);
     }
   }
 
   // Write order-only dependencies.
   if (!orderOnlyDeps.empty()) {
+    cmNinjaUniqDeps sortedOrderOnlyDeps;
+    std::copy(orderOnlyDeps.begin(), orderOnlyDeps.end(),
+              std::inserter(sortedOrderOnlyDeps, sortedOrderOnlyDeps.begin()));
     arguments += " ||";
-    for (cmNinjaDeps::const_iterator i = orderOnlyDeps.begin();
-         i != orderOnlyDeps.end(); ++i) {
+    for (cmNinjaUniqDeps::const_iterator i = sortedOrderOnlyDeps.begin();
+         i != sortedOrderOnlyDeps.end(); ++i) {
       arguments += " " + EncodeIdent(EncodePath(*i), os);
     }
   }
@@ -187,7 +205,8 @@ void cmGlobalNinjaGenerator::WriteBuild(
 
   // Write outputs files.
   build += "build";
-  for (cmNinjaDeps::const_iterator i = outputs.begin(); i != outputs.end();
+  for (cmNinjaUniqDeps::const_iterator i = sortedOutputs.begin();
+       i != sortedOutputs.end();
        ++i) {
     build += " " + EncodeIdent(EncodePath(*i), os);
     if (this->ComputingUnknownDependencies) {

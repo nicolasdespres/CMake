@@ -17,5 +17,6 @@
 
 typedef std::vector<std::string> cmNinjaDeps;
 typedef std::map<std::string, std::string> cmNinjaVars;
+typedef std::set<std::string> cmNinjaUniqDeps;
 
 #endif // ! cmNinjaTypes_h
